@@ -1,23 +1,22 @@
 from flask import Blueprint, request, jsonify
-from services import ppt_parser, keywords
-import os, uuid, json
+from werkzeug.utils import secure_filename
+from pathlib import Path
+from ..services.ppt_parser import parse_ppt
+from ..services.keywords import extract_keywords
 
-bp = Blueprint("analyze", __name__, url_prefix="/api")
+analyze_bp = Blueprint("analyze", __name__)
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
 
-@bp.route("/analyze", methods=["POST"])
+@analyze_bp.route("/analyze", methods=["POST"])
 def analyze():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
     f = request.files["file"]
-    aid = uuid.uuid4().hex[:12]
-    path = f"storage/{aid}.pptx"
-    f.save(path)
+    fname = secure_filename(f.filename) or "upload.pptx"
+    fpath = UPLOAD_DIR / fname
+    f.save(fpath)
 
-    slides = ppt_parser.extract_text(path)
-    for s in slides:
-        s["keywords"] = keywords.get_keywords(s["text"])
-        s["explanations"] = {}
-
-    result = {"analysisId": aid, "slides": slides, "subject":None, "level":None, "feedback":None}
-    os.makedirs("storage", exist_ok=True)
-    with open(f"storage/{aid}.json","w",encoding="utf-8") as f:
-        json.dump(result,f,ensure_ascii=False,indent=2)
-    return jsonify(result)
+    slides_text = parse_ppt(str(fpath))
+    keywords_result = {sid: extract_keywords(text) for sid, text in slides_text.items()}
+    return jsonify({"slides": slides_text, "keywords": keywords_result})

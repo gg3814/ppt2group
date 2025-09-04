@@ -1,15 +1,9 @@
 from flask import Flask
-from routes import analyze 
-# subject, level, explain, result, feedback
+from .routes.analyze import analyze_bp
 
 app = Flask(__name__)
-
-app.register_blueprint(analyze.bp)
-# app.register_blueprint(subject.bp)
-# app.register_blueprint(level.bp)
-# app.register_blueprint(explain.bp)
-# app.register_blueprint(result.bp)
-# app.register_blueprint(feedback.bp)
+app.config['JSON_AS_ASCII'] = False
+app.register_blueprint(analyze_bp)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(debug=True)

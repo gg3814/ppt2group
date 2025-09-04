@@ -1,12 +1,12 @@
 from pptx import Presentation
 
-def extract_text(path:str):
-    prs = Presentation(path)
-    slides = []
-    for i, slide in enumerate(prs.slides):
-        buf = []
+def parse_ppt(file_path: str) -> dict:
+    prs = Presentation(file_path)
+    slides_text = {}
+    for i, slide in enumerate(prs.slides, start=1):
+        texts = []
         for shape in slide.shapes:
             if hasattr(shape, "text"):
-                buf.append(shape.text)
-        slides.append({"idx":i, "text":"\n".join(buf)})
-    return slides
+                texts.append(shape.text.strip())
+        slides_text[f"slide_{i}"] = " ".join(texts)
+    return slides_text
