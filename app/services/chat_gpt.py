@@ -43,7 +43,7 @@ def ask_gpt_raw(messages: List[Dict[str, Any]], model: str = "gpt-4o") -> Dict[s
         raise GPTError(str(data["error"]))
     return data
 
-def first_text(resp: Dict[str, Any]) -> str:
+def get_first_content(resp: Dict[str, Any]) -> str:
     """
     GPT 응답 JSON에서 첫 번째 메시지(content)만 추출
     :param resp_json: call_chatgpt() 반환값
@@ -59,4 +59,4 @@ def first_text(resp: Dict[str, Any]) -> str:
 
 # 사용 예
 # resp = ask_gpt_raw([{"role":"user","content":"안녕"}])
-# text = first_text(resp)
+# text = get_first_content(resp)

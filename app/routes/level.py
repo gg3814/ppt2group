@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from ..services.gpt import call_chatgpt, first_text
+from ..services.chat_gpt import call_chatgpt, get_first_content
 import json
 
 level_bp = Blueprint("level", __name__)
@@ -12,13 +12,13 @@ def generate_questions():
         return jsonify({"error": "no subject"}), 400
 
     prompt = (
-        f"'{subject}' 과목을 학습한 학생 수준을 평가하기 위한 OX 문제 5개를 만들어라.\n"
+        f"'{subject}' 과목을 학습한 학생 수준을 평가하기 위한 O/X 문제 5개를 만들어라.\n"
         f"각 문제는 JSON 배열 형태로 제공하라. 각 항목은 {{'question': '...', 'answer': 'O'}} "
         f"형태여야 한다. 오직 JSON만 출력하라."
     )
 
     resp = call_chatgpt([{"role": "user", "content": prompt}])
-    text = first_text(resp)
+    text = get_first_content(resp)
 
     try:
         questions = json.loads(text)
@@ -40,7 +40,7 @@ def evaluate():
         return jsonify({"error": "need subject, questions and answers"}), 400
 
     prompt = (
-        f"'{subject}' 과목에 대한 OX 문제와 학생 답안이 있다.\n\n"
+        f"'{subject}' 과목에 대한 O/X 문제와 학생 답안이 있다.\n\n"
         f"문제와 정답: {questions}\n"
         f"학생의 답변: {answers}\n\n"
         f"정답과 비교해 점수를 매기고, 학생 수준을 '상/중/하' 중 하나로 평가하라. "
@@ -49,7 +49,7 @@ def evaluate():
     )
 
     resp = call_chatgpt([{"role": "user", "content": prompt}])
-    text = first_text(resp)
+    text = get_first_content(resp)
 
     try:
         result = json.loads(text)

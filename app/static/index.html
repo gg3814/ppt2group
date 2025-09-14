@@ -30,6 +30,7 @@
   <script>
     let currentSubject = "";
     let currentQuestions = [];
+    let keywords = [];
 
     // PPT 업로드 → analyze → subject → questions
     async function uploadPPT() {
@@ -51,7 +52,6 @@
         JSON.stringify(data, null, 2);
 
       // 2) 키워드 모으기
-      let keywords = [];
       if (data.keywords) {
         for (const slideId in data.keywords) {
           keywords = keywords.concat(data.keywords[slideId]);
@@ -131,7 +131,7 @@
       const res2 = await fetch("/explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: currentSubject, level: data.level })
+        body: JSON.stringify({ subject: currentSubject, level: data.level, keywords: keywords})
       });
       const expData = await res2.json();
       console.log("explain 응답:", expData);
