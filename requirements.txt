@@ -3,3 +3,4 @@ python-pptx
 requests
 yake
 wikipedia
+dotenv
