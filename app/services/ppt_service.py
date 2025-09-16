@@ -1,6 +1,9 @@
 from pptx import Presentation
+import logging
 
-def parse_ppt(file_path: str) -> dict:
+log = logging.getLogger(__name__)
+
+def parse_ppt(file_path: str) -> dict[str, str]:
     prs = Presentation(file_path)
     slides_text = {}
 
@@ -12,6 +15,7 @@ def parse_ppt(file_path: str) -> dict:
             if hasattr(shape, "text"):
                 texts.append(shape.text.strip())
                 
-        slides_text[f"slide_{i}"] = " ".join(texts)
+        slides_text[str(i)] = " ".join(texts)
 
+    log.info("Text in slides: %s", slides_text)
     return slides_text

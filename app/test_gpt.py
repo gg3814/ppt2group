@@ -1,7 +1,7 @@
-from app.services import chat_gpt
+from app.services import gpt_service
 
 if __name__ == "__main__":
     msg = [{"role": "user", "content": "안녕! GPT API가 잘 작동하는지 테스트 중이야."}]
-    res = chat_gpt.ask_gpt(msg)
+    res = gpt_service.ask_gpt(msg)
     print("=== GPT 응답 ===")
     print(res)

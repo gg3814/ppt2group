@@ -22,7 +22,7 @@
     <div id="questions"></div>
     <button onclick="submitAnswers()">답변 제출</button>
     <h3>수준 평가 결과</h3>
-    <pre id="levelResult"></pre>
+    <pre id="levelResult"></pre>  
     <h3>개념 설명 결과</h3>
     <pre id="explainResult"></pre>
   </section>
@@ -44,23 +44,21 @@
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
 
-      // 1) /analyze
-      const res = await fetch("/analyze", { method: "POST", body: formData });
+      // 1) /analyze_ppt
+      const res = await fetch("/analyze_ppt", { method: "POST", body: formData });
       const data = await res.json();
       console.log("analyze 결과:", data);
       document.getElementById("pptResult").textContent =
-        JSON.stringify(data, null, 2);
+        JSON.stringify(data, null ,2);
 
       // 2) 키워드 모으기
-      if (data.keywords) {
-        for (const slideId in data.keywords) {
-          keywords = keywords.concat(data.keywords[slideId]);
-        }
+      for (const slideId in data.keywords) {
+        keywords = keywords.concat(data.keywords[slideId]);
       }
       console.log("모은 keywords:", keywords);
 
-      // 3) /subject 호출
-      const res2 = await fetch("/subject", {
+      // 3) /guess-subject 호출
+      const res2 = await fetch("/guess_subject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ keywords })
@@ -71,49 +69,50 @@
         JSON.stringify(subjData, null, 2);
 
       // 4) 과목 기반으로 질문 생성
-      currentSubject = subjData.answer || "";
+      currentSubject = subjData.subject || "";
       if (currentSubject) {
         await getQuestions(currentSubject);
       }
     }
 
-    // /level/questions → 질문 5개 요청
+    // /generate_question → 질문 5개 요청
     async function getQuestions(subject) {
-      const res = await fetch("/level/questions", {
+      const res = await fetch("/generate_question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject })
       });
       const data = await res.json();
-      console.log("level questions 응답:", data);
+      console.log("generate_question 응답:", data);
 
-      currentQuestions = data.questions;  // 배열 [{question, answer}, ...]
+      currentQuestions = data;  // 배열 [{question, answer}, ...]
 
       // UI 렌더링
       const qDiv = document.getElementById("questions");
       qDiv.innerHTML = "<h3>OX 질문</h3>";
-      currentQuestions.forEach((qObj, idx) => {
+      for (let i = 0; i < currentQuestions.length; i++) {
+        question = currentQuestions[i].question;
         qDiv.innerHTML += `
-          <div>
-            <label>${idx + 1}. ${qObj.question}</label><br>
-            <input type="radio" name="q${idx}" value="O"> O
-            <input type="radio" name="q${idx}" value="X"> X
-          </div>
-          <br>
-        `;
-      });
+            <div>
+              <label>${i+1}. ${question}</label><br>
+              <input type="radio" name="q${i+1}" value="O"> O
+              <input type="radio" name="q${i+1}" value="X"> X
+            </div>
+            <br>
+          `
+      }
     }
 
-    // 답변 제출 → /level/evaluate → /explain
+    // 답변 제출 → /evaluate_level → /explain_keyword
     async function submitAnswers() {
       const answers = [];
       for (let i = 0; i < currentQuestions.length; i++) {
-        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const selected = document.querySelector(`input[name="q${i+1}"]:checked`);
         answers.push(selected ? selected.value : "미응답");
       }
 
       // 1) 수준 평가
-      const res = await fetch("/level/evaluate", {
+      const res = await fetch("/evaluate_level", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,12 +122,12 @@
         })
       });
       const data = await res.json();
-      console.log("level evaluate 응답:", data);
+      console.log("evaluate_level 응답:", data);
       document.getElementById("levelResult").textContent =
         JSON.stringify(data, null, 2);
 
       // 2) 맞춤 개념 설명
-      const res2 = await fetch("/explain", {
+      const res2 = await fetch("/explain_keyword", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject: currentSubject, level: data.level, keywords: keywords})
