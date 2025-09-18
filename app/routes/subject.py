@@ -14,8 +14,5 @@ def subject():
         f"가능한 한 구체적인 과목명을 알려주세요.\n\n"
         f"단어 목록: {', '.join(keywords)}"
     )
-
     resp = call_chatgpt([{"role": "user", "content": prompt}])
-    print("GPT 원본 응답:", resp)   # 서버 로그 확인용
-    return jsonify({"answer": first_text(resp), "raw": resp})
-
+    return jsonify({"subject": first_text(resp)})
