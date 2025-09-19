@@ -10,7 +10,10 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 def save_file(file) -> str:
     filename = secure_filename(file.filename) or "upload.pptx"
     filepath = UPLOAD_DIR / filename;
-    file.save(filepath)
+    try:
+        file.save(filepath)
+    except Exception:
+        raise RuntimeError("파일 저장 중 예외 발생") 
 
     file.close()
     log.info("File save: path=%s", filepath);

@@ -9,7 +9,8 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")  # 환경변수에서 API 키 읽기
 BASE_URL = "https://ai.tigrison.com/gateway/api-legacy" # AI Chat API 기본 URL
 
-def call_chatgpt(messages, model="gpt-4o"):
+# API Key 설정 안됨: RuntimeError 던짐
+def ask_gpt(messages, model="gpt-4o"):
     """
     AI Chat API (ChatGPT) 호출
     :param messages: [{"role": "user", "content": "..."}] 형식
@@ -30,9 +31,15 @@ def call_chatgpt(messages, model="gpt-4o"):
         "messages": messages
     }
     resp = requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except Exception as e:
+        log.error("GTP ERROR: %s", e)
+        log.error("Response: %s", resp.json())
+        raise e
+
     data = resp.json()
-    return data
+    return data 
 
 def ask_gpt_raw(messages: List[Dict[str, Any]], model: str = "gpt-4o") -> Dict[str, Any]:
     if not API_KEY:
@@ -42,6 +49,8 @@ def ask_gpt_raw(messages: List[Dict[str, Any]], model: str = "gpt-4o") -> Dict[s
     headers = {"x-api-key": API_KEY, "Content-Type": "application/json"}
     body = {"model": model, "messages": messages}
     r = requests.post(BASE_URL, headers=headers, json=body, timeout=30)
+
+    # 400, 500대 응답시 예외 발생
     r.raise_for_status()
     data = r.json()
 
@@ -50,6 +59,7 @@ def ask_gpt_raw(messages: List[Dict[str, Any]], model: str = "gpt-4o") -> Dict[s
         log.error(str(data["error"]))
         raise RuntimeError(str(data["error"]))
     
+    log.info(data)
     return data
 
 def get_first_content(resp: Dict[str, Any]) -> str:
@@ -63,7 +73,7 @@ def get_first_content(resp: Dict[str, Any]) -> str:
         return resp["choices"][0]["message"]["content"].strip()
     except Exception as e:
         log.error(e)
-        return "[ERROR: 응답 파싱 실패]"
+        raise RuntimeError("응답 파싱 실패")
 
 # 사용 예
 # resp = ask_gpt_raw([{"role":"user","content":"안녕"}])

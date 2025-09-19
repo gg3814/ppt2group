@@ -3,19 +3,25 @@ import logging
 
 log = logging.getLogger(__name__)
 
-def parse_ppt(file_path: str) -> dict[str, str]:
+# {슬라이드번호: "텍스트1 텍스트2 텍스트3"} 형식의 딕셔너리 반환
+def parse_ppt(file_path: str) -> dict[int, str]:
     prs = Presentation(file_path)
     slides_text = {}
 
     for i, slide in enumerate(prs.slides, start=1):
-        texts = []
+        texts = parse_texts(slide)
+        slides_text[f"slide_{i}"] = " ".join(texts)
 
-        for shape in slide.shapes:
-            # Shape에 text 속성 있으면 리스트에 추가
-            if hasattr(shape, "text"):
-                texts.append(shape.text.strip())
-                
-        slides_text[str(i)] = " ".join(texts)
-
-    log.info("Text in slides: %s", slides_text)
+    log.info("Parsed file's path: %s", file_path)
     return slides_text
+
+# slide: Slide 타입
+def parse_texts(slide) -> list[str]:
+    texts = []
+
+    for shape in slide.shapes:
+        if hasattr(shape, "text"):
+            texts.append(shape.text.strip())
+    
+    return texts
+
