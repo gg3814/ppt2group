@@ -10,7 +10,7 @@ def parse_ppt(file_path: str) -> dict[int, str]:
 
     for i, slide in enumerate(prs.slides, start=1):
         texts = parse_texts(slide)
-        slides_text[f"slide_{i}"] = " ".join(texts)
+        slides_text[i] = " ".join(texts)
 
     log.info("Parsed file's path: %s", file_path)
     return slides_text
