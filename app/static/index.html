@@ -11,6 +11,17 @@ pre{background:#f5f5f5;padding:8px;white-space:pre-wrap}
 .kw{background:yellow}
 .hidden{display:none}
 </style>
+<meta charset="utf-8" />
+<title>CapstonePPT 통합 테스트</title>
+<style>
+body{font-family:sans-serif;padding:16px}
+section{margin-bottom:24px}
+pre{background:#f5f5f5;padding:8px;white-space:pre-wrap}
+.viewer{display:flex;gap:24px}
+.left,.right{width:50%}
+.kw{background:yellow}
+.hidden{display:none}
+</style>
 <body>
 <h1>MVP 통합 플로우</h1>
 
@@ -20,7 +31,49 @@ pre{background:#f5f5f5;padding:8px;white-space:pre-wrap}
   <button id="btnUpload">업로드</button>
   <pre id="info"></pre>
 </section>
+<h1>MVP 통합 플로우</h1>
 
+<section>
+  <h2>1. PPT 업로드 → 파싱/키워드/과목 자동</h2>
+  <input type="file" id="ppt" accept=".ppt,.pptx" />
+  <button id="btnUpload">업로드</button>
+  <pre id="info"></pre>
+</section>
+
+<section>
+  <h2>2. 모드 선택</h2>
+  <button data-level="하" class="btn-level">하</button>
+  <button data-level="중" class="btn-level">중</button>
+  <button data-level="상" class="btn-level">상</button>
+  <button id="btnTest">테스트 모드</button>
+  <pre id="modeOut"></pre>
+</section>
+
+<section id="testBox" class="hidden">
+  <h2>3. 테스트(객관식)</h2>
+  <div id="questions"></div>
+  <button id="btnSubmit">답변 제출</button>
+  <pre id="testResult"></pre>
+</section>
+
+<section id="viewer" class="hidden">
+  <h2>4. 결과 화면</h2>
+  <div class="viewer">
+    <div class="left">
+      <h3 id="slideTitle"></h3>
+      <pre id="slideText"></pre>
+      <button id="prev">이전</button>
+      <button id="next">다음</button>
+    </div>
+    <div class="right">
+      <h3>핵심 단어</h3>
+      <p id="kwList"></p>
+      <h3>개념 설명</h3>
+      <pre id="expText"></pre>
+      <button id="btnDownload">ZIP 다운로드</button>
+    </div>
+  </div>
+</section>
 <section>
   <h2>2. 모드 선택</h2>
   <button data-level="하" class="btn-level">하</button>

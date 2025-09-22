@@ -5,9 +5,9 @@ from .routes.explain import explain_bp
 from .routes.download import download_bp
 import logging
 
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.config['JSON_AS_ASCII'] = False
+
 app.register_blueprint(analyze_bp)
 app.register_blueprint(mode_bp)     
 app.register_blueprint(explain_bp)
@@ -21,4 +21,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
