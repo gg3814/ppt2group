@@ -14,8 +14,8 @@ def explain():
     data = request.json or {}
     subject = request.json.get("subject", "")
     level = request.json.get("level", "")
-    slides = data.get("slides",{})     # {"slide_1":"...", ...} 
-    keywords = data.get("keywords",{}) # {"slide_1":[...], ...}
+    slides = data.get("slides",{})     # {1:"...", ...} 
+    keywords = data.get("keywords",{}) # {1:[...], ...}
 
     if not subject or not level or not slides or not keywords:
         log.warning("[ERROR] /explain/slides [POST] : Missing request");
@@ -26,7 +26,11 @@ def explain():
         kw = keywords.get(sid, [])[:10]
         prompt = createExplainKeywordPrompt(level=level, subject=subject, keywords=kw)
 
-        resp = ask_gpt([{"role":"user","content":prompt}])
+        try:
+            resp = ask_gpt([{"role":"user","content":prompt}])
+        except RuntimeError:
+            return jsonify({"error": "예외 발생. 다시 시도해주세요."}), HTTPStatus.INTERNAL_SERVER_ERROR
+        
         per_slide[sid] = get_first_content(resp)
 
     log.info("[END] /explain/slides [POST]")

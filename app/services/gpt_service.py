@@ -34,7 +34,7 @@ def ask_gpt(messages, model="gpt-4o"):
     try:
         resp.raise_for_status()
     except Exception as e:
-        log.error("GTP ERROR: %s", e)
+        log.error("GPT ERROR: %s", e)
         log.error("Response: %s", resp.json())
         raise e
 

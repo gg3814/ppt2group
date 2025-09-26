@@ -41,8 +41,12 @@ def analyze():
     for keyword in keywords.values():
         keyword_list += keyword
 
-    prompt = createGuessSubjectPrompt(keyword_list[:200])
-    resp = ask_gpt([{"role":"user","content":prompt}])
+    try:
+        prompt = createGuessSubjectPrompt(keyword_list[:200])
+        resp = ask_gpt([{"role":"user","content":prompt}])
+    except RuntimeError:
+        return jsonify({"error": "예외 발생. 다시 시도해주세요."}), HTTPStatus.INTERNAL_SERVER_ERROR
+
     subject = get_first_content(resp)
 
     log.info("[END] /analyze [POST]")

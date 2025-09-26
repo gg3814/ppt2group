@@ -11,21 +11,21 @@ log = logging.getLogger(__name__)
 mode_bp = Blueprint("mode", __name__)
 
 # A모드: 레벨 직접 선택 → 바로 등급 확정
-@mode_bp.route("/mode/select", methods=["POST"])
-def mode_select():
-    log.info("[START] /mode/select [POST]")
+# @mode_bp.route("/mode/select", methods=["POST"])
+# def mode_select():
+#     log.info("[START] /mode/select [POST]")
 
-    data = request.json or {}
-    level = data.get("level")          # "하"|"중"|"상"
-    subject = data.get("subject","")
-    keywords = data.get("keywords",{}) # {"slide_1":[...], ...}
+#     data = request.json or {}
+#     level = data.get("level")          # "하"|"중"|"상"
+#     subject = data.get("subject","")
+#     keywords = data.get("keywords",{}) # {"slide_1":[...], ...}
 
-    if not level or not subject or not keywords:
-        log.warning("[ERROR] /mode/select [POST] : Missing request")
-        return jsonify({"error":"missing level/subject/keywords"}), HTTPStatus.BAD_REQUEST
+#     if not level or not subject or not keywords:
+#         log.warning("[ERROR] /mode/select [POST] : Missing request")
+#         return jsonify({"error":"missing level/subject/keywords"}), HTTPStatus.BAD_REQUEST
     
-    log.info("[END] /mode/select [POST]")
-    return jsonify({"level": level, "subject": subject, "keywords": keywords})
+#     log.info("[END] /mode/select [POST]")
+#     return jsonify({"level": level})
 
 # B모드 시작: 객관식 5문제 생성(보기 3개, 정답 1개) JSON 강제
 @mode_bp.route("/mode/test/start", methods=["POST"])
@@ -39,7 +39,10 @@ def test_start():
         return jsonify({"error":"missing subject"}), HTTPStatus.BAD_REQUEST
     
     prompt = createGenerateQuestionPrompt(subject)
-    resp = ask_gpt([{"role":"user","content":prompt}])
+    try:
+        resp = ask_gpt([{"role":"user","content":prompt}])
+    except RuntimeError:
+        return jsonify({"error": "예외 발생. 다시 시도해주세요."}), HTTPStatus.INTERNAL_SERVER_ERROR
     text = get_first_content(resp)
 
     # GPT가 JSON 말고 설명을 섞어서 주는 경우 대비
@@ -51,7 +54,7 @@ def test_start():
             questions = json.loads(match.group())
         except:
             questions = []
-
+  
     log.info("[END] /mode/test/start [POST]")
     return jsonify({"questions": questions})
 
